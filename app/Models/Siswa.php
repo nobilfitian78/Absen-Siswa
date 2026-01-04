@@ -25,6 +25,6 @@ class Siswa extends Model
 
     public function absensi()
     {
-        return $this->hasMany(Absensi::class);
+        // return $this->hasMany(Absensi::class);
     }
 }
