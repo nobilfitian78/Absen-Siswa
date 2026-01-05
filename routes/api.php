@@ -19,5 +19,5 @@ Route::middleware('auth:api')->group(function () {
 
     Route::apiResource('kelas', KelasController::class);
     Route::apiResource('siswa', SiswaController::class);
-    // Route::apiResource('absensi', AbsensiController::class);
+    Route::apiResource('absensi', AbsensiController::class);
 });
