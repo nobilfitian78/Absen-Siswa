@@ -36,18 +36,36 @@ class KelasController extends Controller
         return new KelasResource($kelas);
     }
 
+    //PUT api/kelas/{id}
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'nama_kelas' => 'required|string'
+        ]);
+
         $kelas = Kelas::findOrFail($id);
-        $kelas->update($request->all());
+        $before = $kelas->nama_kelas;
+        
+        $kelas->nama_kelas = $validated['nama_kelas'];
+        $save_result = $kelas->save();
+        
+        // Force reload dari database
+        $kelas->refresh();
 
         return response()->json([
             'success' => true,
             'message' => 'Kelas berhasil diupdate',
-            'data' => new KelasResource($kelas->fresh()->load('siswa'))
+            'debug' => [
+                'before' => $before,
+                'after' => $kelas->nama_kelas,
+                'save_result' => $save_result,
+                'database_check' => Kelas::find($id)->nama_kelas
+            ],
+            'data' => new KelasResource($kelas->load('siswa'))
         ]);
     }
 
+    // DELETE api/kelas/{id}
     public function destroy($id)
     {
         Kelas::destroy($id);

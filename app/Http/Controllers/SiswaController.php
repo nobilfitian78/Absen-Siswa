@@ -48,12 +48,39 @@ class SiswaController extends Controller
 
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'nis' => 'sometimes|string|unique:siswa,nis,' . $id,
+            'nama_siswa' => 'sometimes|string',
+            'jenis_kelamin' => 'sometimes|in:L,P',
+            'kelas_id' => 'sometimes|exists:kelas,id'
+        ]);
+
         $siswa = Siswa::findOrFail($id);
-        $siswa->update($request->all());
+        $before = $siswa->getOriginal();
+        
+        // Debug: Lihat apa yang diterima di request
+        $request_all = $request->all();
+        
+        if (!empty($validated)) {
+            $siswa->fill($validated);
+            $save_result = $siswa->save();
+        } else {
+            $save_result = false;
+        }
+        $siswa->refresh();
+        
         return response()->json([
             'success' => true,
             'message' => 'Siswa berhasil diperbarui',
-            'data' => new SiswaResource($siswa->fresh()->load('kelas'))
+            'debug' => [
+                'request_all' => $request_all,
+                'validated' => $validated,
+                'before' => $before,
+                'after' => $siswa->getAttributes(),
+                'save_result' => $save_result,
+                'database_check' => Siswa::find($id)->getAttributes()
+            ],
+            'data' => new SiswaResource($siswa->load('kelas'))
         ]);
     }
 

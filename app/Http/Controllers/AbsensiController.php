@@ -62,18 +62,26 @@ class AbsensiController extends Controller
     {
         $absensi = Absensi::findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'tanggal' => 'required|date',
-            'status'  => 'required|in:H,I,S,A'
+            'status'  => 'required|in:Hadir,Izin,Sakit,Alpha'
         ]);
 
-        $absensi->update([
-            'tanggal' => $request->tanggal,
-            'status'  => $request->status
-        ]);
+        $before = $absensi->getOriginal();
+        
+        $absensi->tanggal = $validated['tanggal'];
+        $absensi->status = $validated['status'];
+        $save_result = $absensi->save();
+        $absensi->refresh();
 
         return response()->json([
             'message' => 'Absensi berhasil diperbarui',
+            'debug' => [
+                'before' => $before,
+                'after' => $absensi->getAttributes(),
+                'save_result' => $save_result,
+                'database_check' => Absensi::find($id)->getAttributes()
+            ],
             'data' => $absensi
         ]);
     }
